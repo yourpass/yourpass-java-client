@@ -1,5 +1,15 @@
 package eu.yourpass;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.yourpass.model.Pass;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.dmfs.httpessentials.client.HttpRequestExecutor;
 import org.dmfs.httpessentials.exceptions.ProtocolError;
 import org.dmfs.httpessentials.exceptions.ProtocolException;
@@ -56,8 +66,6 @@ class YourpassApp {
         if (this.token == null || this.token.expirationDate().after(DateTime.now())) {
             this.token = new ResourceOwnerPasswordGrant(
                     client, new BasicScope("scope"), this.username, this.password).accessToken(executor);
-            System.out.println(token.accessToken());
-            System.out.println(token.expirationDate());
         }
 
         return token;
@@ -65,36 +73,59 @@ class YourpassApp {
     }
 
 
-    public Map<String, Object> createPass(String templateId, Map<String, Object> data) {
-        System.out.println(this.apiUrl);
-        /* TODO - call post
-            url: this.apiUrl + /v1/pass/
-            body:
-            {
-                templateId:"{template-id}",
-                data: {
-                    property: "foo",
-                    property2: "bar"
-                }
-            }
-        */
-        return null;
+    public Pass createPass(String templateId, Map<String, Object> data) throws IOException, ProtocolException, ProtocolError {
+        Pass pass = new Pass();
+        pass.setDynamicData(data);
+        pass.setTemplateId(templateId);
+        ObjectMapper mapper = new ObjectMapper();
+        CloseableHttpClient client = HttpClients.createDefault();
+        HttpPost httpPost = new HttpPost(this.apiUrl + "/v1/pass");
+        StringEntity entity = new StringEntity(mapper.writeValueAsString(pass));
+        httpPost.setEntity(entity);
+        httpPost.setHeader("Accept", "application/json");
+        httpPost.setHeader("Content-type", "application/json");
+        String authorization = String.format("Bearer %s", this.getToken().accessToken());
+        httpPost.setHeader("Authorization", authorization);
+        CloseableHttpResponse response = client.execute(httpPost);
+        String jsonResponse = EntityUtils.toString(response.getEntity());
+        Pass map = mapper.readValue(jsonResponse, Pass.class);
+        client.close();
+        return map;
     }
 
+    public Pass readPass(String passId) throws IOException, ProtocolError, ProtocolException {
+        ObjectMapper mapper = new ObjectMapper();
+        CloseableHttpClient client = HttpClients.createDefault();
+        HttpGet httpPost = new HttpGet(this.apiUrl + "/v1/pass/" + passId);
+        httpPost.setHeader("Accept", "application/json");
+        httpPost.setHeader("Content-type", "application/json");
+        String authorization = String.format("Bearer %s", this.getToken().accessToken());
+        httpPost.setHeader("Authorization", authorization);
+        CloseableHttpResponse response = client.execute(httpPost);
+        String jsonResponse = EntityUtils.toString(response.getEntity());
+        Pass map = mapper.readValue(jsonResponse, Pass.class);
+        client.close();
+        return map;
+    }
 
-    public Map<String, Object> updatePass(String passId, String templateId, Map<String, Object> data) {
-        /* TODO - call put to:
-            url: this.apiUrl + /v1/pass/{passId}
-            body:
-            {
-                templateId:"{template-id}",
-                data: {
-                    property: "foo",
-                    property2: "bar"
-                }
-            }
-        */
-        return null;
+    public Pass updatePass(String passId, String templateId, Map<String, Object> data) throws IOException, ProtocolError, ProtocolException {
+        ObjectMapper mapper = new ObjectMapper();
+        CloseableHttpClient client = HttpClients.createDefault();
+        HttpPut httpPost = new HttpPut(this.apiUrl + "/v1/pass/" + passId);
+        Pass pass = new Pass();
+        pass.setDynamicData(data);
+        pass.setTemplateId(templateId);
+        StringEntity entity = new StringEntity(mapper.writeValueAsString(pass));
+        httpPost.setEntity(entity);
+        httpPost.setHeader("Accept", "application/json");
+        httpPost.setHeader("Content-type", "application/json");
+        String authorization = String.format("Bearer %s", this.getToken().accessToken());
+        httpPost.setHeader("Authorization", authorization);
+        CloseableHttpResponse response = client.execute(httpPost);
+        String jsonResponse = EntityUtils.toString(response.getEntity());
+        Pass map = mapper.readValue(jsonResponse, Pass.class);
+        client.close();
+        return map;
     }
 
 
