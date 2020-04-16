@@ -1,6 +1,5 @@
 package eu.yourpass;
 
-import org.dmfs.httpessentials.client.HttpRequest;
 import org.dmfs.httpessentials.client.HttpRequestExecutor;
 import org.dmfs.httpessentials.exceptions.ProtocolError;
 import org.dmfs.httpessentials.exceptions.ProtocolException;
@@ -13,22 +12,21 @@ import org.dmfs.rfc5545.Duration;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Map;
 
 
 class YourpassApp {
-    // static variable single_instance of type Singleton 
+
+    // static variable single instance of type YourpassApp
     private static YourpassApp instance = null;
 
-    // variable of type String 
-    private String apiUrl;
-    private String clientId;
-    private String clientSecret;
+    // configuration
     private String password;
     private String username;
+    private String apiUrl;
 
+    // oauth variables
     private HttpRequestExecutor executor;
-    private OAuth2AuthorizationProvider provider;
-    private OAuth2ClientCredentials credentials;
     private OAuth2Client client;
     private OAuth2AccessToken token;
 
@@ -36,27 +34,21 @@ class YourpassApp {
     private YourpassApp(String apiUrl, String clientId, String clientSecret, String username, String password) {
         System.out.println("create YourpassApp instance with api_url: " + apiUrl + " client_id: " + clientId + " client_secret: " + clientSecret + " username: " + username);
         this.apiUrl = apiUrl;
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
         this.password = password;
         this.username = username;
 
-        executor = new HttpUrlConnectionExecutor();
-
-// Create OAuth2 provider
-        provider = new BasicOAuth2AuthorizationProvider(
+        this.executor = new HttpUrlConnectionExecutor();
+        BasicOAuth2AuthorizationProvider provider = new BasicOAuth2AuthorizationProvider(
                 URI.create(this.apiUrl + "/oauth2/auth"),
                 URI.create(this.apiUrl + "/oauth2/token"),
                 new Duration(1, 0, 3600));
 
+        BasicOAuth2ClientCredentials credentials = new BasicOAuth2ClientCredentials(
+                clientId, clientSecret);
 
-        credentials = new BasicOAuth2ClientCredentials(
-                this.clientId, this.clientSecret);
-
-        client = new BasicOAuth2Client(
+        this.client = new BasicOAuth2Client(
                 provider,
                 credentials, URI.create("http://localhost"));
-
     }
 
     public OAuth2AccessToken getToken() throws ProtocolException, ProtocolError, IOException {
@@ -73,16 +65,36 @@ class YourpassApp {
     }
 
 
-    public void getPasses() throws ProtocolException, ProtocolError, IOException, InterruptedException {
-        String url = this.apiUrl + "/v1/pass";
-        // 'request' is a HttpRequest instance that's to be authenticated
-        // result = executor.execute(url, new BearerAuthenticatedRequest(request, token));
-        /* String authorization = String.format("Bearer %s", getToken().accessToken());
-        java.net.http.HttpRequest r = java.net.http.HttpRequest.newBuilder().GET().header("Authorization", authorization).build();
-
-        HttpClient client = HttpClient.newHttpClient();
+    public Map<String, Object> createPass(String templateId, Map<String, Object> data) {
+        System.out.println(this.apiUrl);
+        /* TODO - call post
+            url: this.apiUrl + /v1/pass/
+            body:
+            {
+                templateId:"{template-id}",
+                data: {
+                    property: "foo",
+                    property2: "bar"
+                }
+            }
         */
+        return null;
+    }
 
+
+    public Map<String, Object> updatePass(String passId, String templateId, Map<String, Object> data) {
+        /* TODO - call put to:
+            url: this.apiUrl + /v1/pass/{passId}
+            body:
+            {
+                templateId:"{template-id}",
+                data: {
+                    property: "foo",
+                    property2: "bar"
+                }
+            }
+        */
+        return null;
     }
 
 
