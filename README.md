@@ -3,7 +3,7 @@
 ## Yourpass API client for JAVA
 
 
-### How to run:
+### How to run test:
 
 1) Create `.env` file with exported system enviroments:
 
