@@ -25,7 +25,7 @@ import java.net.URI;
 import java.util.Map;
 
 
-class YourpassApp {
+public class YourpassApp {
 
     // static variable single instance of type YourpassApp
     private static YourpassApp instance = null;
