@@ -47,7 +47,10 @@ public class YourpassAppTest {
 
             );
 
-            Pass pass = YourpassApp.getInstance().createPass(System.getenv("TEMPLATE_ID"), new HashMap<String, Object>());
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("property", "Příliš žluťoučký kůň úpěl ďábelské ódy.");
+            Pass pass = YourpassApp.getInstance().createPass(System.getenv("TEMPLATE_ID"), map);
 
             System.out.println(pass.toString());
 

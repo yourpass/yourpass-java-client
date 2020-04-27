@@ -2,10 +2,8 @@ package eu.yourpass;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.yourpass.model.Pass;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.*;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -80,12 +78,9 @@ public class YourpassApp {
         ObjectMapper mapper = new ObjectMapper();
         CloseableHttpClient client = HttpClients.createDefault();
         HttpPost httpPost = new HttpPost(this.apiUrl + "/v1/pass");
-        StringEntity entity = new StringEntity(mapper.writeValueAsString(pass));
+        StringEntity entity = new StringEntity(mapper.writeValueAsString(pass), ContentType.APPLICATION_JSON);
         httpPost.setEntity(entity);
-        httpPost.setHeader("Accept", "application/json");
-        httpPost.setHeader("Content-type", "application/json");
-        String authorization = String.format("Bearer %s", this.getToken().accessToken());
-        httpPost.setHeader("Authorization", authorization);
+        prepareHeaders(httpPost);
         CloseableHttpResponse response = client.execute(httpPost);
         String jsonResponse = EntityUtils.toString(response.getEntity());
         Pass map = mapper.readValue(jsonResponse, Pass.class);
@@ -96,12 +91,9 @@ public class YourpassApp {
     public Pass readPass(String passId) throws IOException, ProtocolError, ProtocolException {
         ObjectMapper mapper = new ObjectMapper();
         CloseableHttpClient client = HttpClients.createDefault();
-        HttpGet httpPost = new HttpGet(this.apiUrl + "/v1/pass/" + passId);
-        httpPost.setHeader("Accept", "application/json");
-        httpPost.setHeader("Content-type", "application/json");
-        String authorization = String.format("Bearer %s", this.getToken().accessToken());
-        httpPost.setHeader("Authorization", authorization);
-        CloseableHttpResponse response = client.execute(httpPost);
+        HttpGet httpGet = new HttpGet(this.apiUrl + "/v1/pass/" + passId);
+        prepareHeaders(httpGet);
+        CloseableHttpResponse response = client.execute(httpGet);
         String jsonResponse = EntityUtils.toString(response.getEntity());
         Pass map = mapper.readValue(jsonResponse, Pass.class);
         client.close();
@@ -111,21 +103,24 @@ public class YourpassApp {
     public Pass updatePass(String passId, String templateId, Map<String, Object> data) throws IOException, ProtocolError, ProtocolException {
         ObjectMapper mapper = new ObjectMapper();
         CloseableHttpClient client = HttpClients.createDefault();
-        HttpPut httpPost = new HttpPut(this.apiUrl + "/v1/pass/" + passId);
+        HttpPut httpPut = new HttpPut(this.apiUrl + "/v1/pass/" + passId);
         Pass pass = new Pass();
         pass.setDynamicData(data);
         pass.setTemplateId(templateId);
-        StringEntity entity = new StringEntity(mapper.writeValueAsString(pass));
-        httpPost.setEntity(entity);
-        httpPost.setHeader("Accept", "application/json");
-        httpPost.setHeader("Content-type", "application/json");
-        String authorization = String.format("Bearer %s", this.getToken().accessToken());
-        httpPost.setHeader("Authorization", authorization);
-        CloseableHttpResponse response = client.execute(httpPost);
+        StringEntity entity = new StringEntity(mapper.writeValueAsString(pass), ContentType.APPLICATION_JSON);
+        prepareHeaders(httpPut);
+        CloseableHttpResponse response = client.execute(httpPut);
         String jsonResponse = EntityUtils.toString(response.getEntity());
         Pass map = mapper.readValue(jsonResponse, Pass.class);
         client.close();
         return map;
+    }
+
+    private void prepareHeaders(HttpRequestBase r) throws ProtocolException, ProtocolError, IOException {
+        r.setHeader("Accept", "application/json");
+        r.setHeader("Content-type", "application/json");
+        String authorization = String.format("Bearer %s", this.getToken().accessToken());
+        r.setHeader("Authorization", authorization);
     }
 
 
