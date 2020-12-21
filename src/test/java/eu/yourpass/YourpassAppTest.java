@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class YourpassAppTest {
+
     @Test
     public void getTokenTest() {
         try {
@@ -25,11 +26,7 @@ public class YourpassAppTest {
             );
             OAuth2AccessToken token = YourpassApp.getInstance().getToken();
             return;
-        } catch (ProtocolException e) {
-            e.printStackTrace();
-        } catch (ProtocolError protocolError) {
-            protocolError.printStackTrace();
-        } catch (IOException e) {
+        } catch (ProtocolException | ProtocolError | IOException e) {
             e.printStackTrace();
         }
         assertTrue(true);
@@ -47,7 +44,6 @@ public class YourpassAppTest {
 
             );
 
-
             Map<String, Object> map = new HashMap<>();
             map.put("property", "Příliš žluťoučký kůň úpěl ďábelské ódy.");
             Pass pass = YourpassApp.getInstance().createPass(System.getenv("TEMPLATE_ID"), map);
@@ -55,11 +51,7 @@ public class YourpassAppTest {
             System.out.println(pass.toString());
 
             return;
-        } catch (ProtocolException e) {
-            e.printStackTrace();
-        } catch (ProtocolError protocolError) {
-            protocolError.printStackTrace();
-        } catch (IOException e) {
+        } catch (ProtocolException | ProtocolError | IOException e) {
             e.printStackTrace();
         }
         assertTrue(true);
